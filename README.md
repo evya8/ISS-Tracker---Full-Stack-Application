@@ -9,6 +9,7 @@ This application:
 - ✅ Fetches astronaut data from Open Notify API  
 - ✅ Stores data in SQLite database
 - ✅ Detects correlations: **When ISS is over a country AND an astronaut from that country is onboard**
+- ✅ **Visualizes ISS position and trajectory on interactive world map** 🗺️
 - ✅ Displays real-time data in a React frontend
 - ✅ Shows alerts when correlations are detected
 
@@ -23,6 +24,8 @@ This application:
 **Frontend:**
 - React 18
 - Axios (HTTP client)
+- Leaflet.js (Interactive maps)
+- React-Leaflet (React wrapper for Leaflet)
 - CSS (Styling)
 
 ## 📁 Project Structure
@@ -41,7 +44,8 @@ iss-tracker/
 │   │   ├── components/
 │   │   │   ├── AlertBanner.js      # Alert display
 │   │   │   ├── ISSLocation.js      # ISS position display
-│   │   │   └── AstronautList.js    # Astronaut table
+│   │   │   ├── AstronautList.js    # Astronaut table
+│   │   │   └── ISSMap.js           # World map visualization
 │   │   ├── App.css
 │   │   ├── index.js
 │   │   └── index.css
@@ -110,6 +114,11 @@ cd frontend
 npm install
 ```
 
+**Note:** This includes Leaflet for the map visualization. If you get a peer dependency error with `react-leaflet`, use:
+```bash
+npm install leaflet react-leaflet@4.2.1
+```
+
 4. Start the React development server:
 ```bash
 npm start
@@ -128,6 +137,7 @@ The Flask backend provides these endpoints:
 | GET | `/api/health` | Health check |
 | GET | `/api/iss/current` | Current ISS position |
 | GET | `/api/iss/history` | Last 20 ISS positions |
+| GET | `/api/iss/history-hours` | ISS positions for last N hours (for map) |
 | GET | `/api/astronauts` | Current astronauts in space |
 | GET | `/api/alerts` | Active alerts |
 | POST | `/api/alerts/dismiss` | Dismiss an alert |
@@ -151,9 +161,29 @@ The Flask backend provides these endpoints:
    ```
 
 4. **Frontend polls backend** (every 10 seconds):
-   - Displays current ISS position
+   - Displays current ISS position on interactive map
+   - Shows 5-hour trajectory path
+   - Displays ISS coordinates in info panel
    - Shows astronauts in space
    - Displays alerts when correlations detected
+
+### Visual Layout:
+
+```
+┌──────────────────────────────────────┐
+│  🛰️ ISS Tracker Header              │
+└──────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│  🗺️ INTERACTIVE WORLD MAP          │
+│  - 🛰️ Satellite icon at ISS pos  │
+│  - Blue trajectory line (5 hrs)  │
+│  - Auto-centering & zoom         │
+└──────────────────────────────────────┘
+┌───────────────────┬──────────────────┐
+│ 📍 ISS Location  │ 👨‍🚀 Astronauts   │
+│ Lat/Lon + History│ List with names│
+└───────────────────┴──────────────────┘
+```
 
 ### Example Alert:
 
@@ -189,6 +219,10 @@ The ISS passes over the USA frequently. If you run the app long enough, you shou
 
 ## 🎨 Frontend Features
 
+- **Interactive world map**: Leaflet-based visualization with ISS tracking 🗺️
+- **Live ISS marker**: Satellite icon (🛰️) showing current position
+- **Trajectory path**: Blue line showing last 5 hours of movement
+- **Auto-centering map**: Automatically follows ISS as it moves
 - **Real-time ISS tracking**: Shows current latitude/longitude
 - **Astronaut roster**: Lists all people currently in space
 - **Alert banner**: Big red banner when correlation detected
@@ -215,6 +249,29 @@ Edit `NATIONALITY_MAP` in `backend/data_fetcher.py`
 - **Astronaut nationality**: Mapping is hardcoded and may need updates as crews change
 - **Database resets**: Delete `iss_tracker.db` to reset all data
 
+## 🗑️ Clearing the Database
+
+To start fresh and clear all collected data:
+
+1. Stop the backend (Ctrl+C)
+2. Delete the database file:
+   ```bash
+   cd backend
+   rm iss_tracker.db
+   ```
+3. Restart backend: `python app.py`
+
+The database will be recreated with:
+- Fresh empty tables
+- Repopulated countries data
+- New data collection starting from scratch
+
+**Timeline after reset:**
+- 0-2 min: ISS marker visible, no path yet
+- 2+ min: Path line starts appearing
+- 1 hour: ~60 data points
+- 5 hours: Full 300 data points
+
 ## 🐛 Troubleshooting
 
 **Backend won't start:**
@@ -237,6 +294,23 @@ Edit `NATIONALITY_MAP` in `backend/data_fetcher.py`
 - APIs might be temporarily down (rare)
 - Test APIs directly: http://api.open-notify.org/iss-now.json
 
+**Map not appearing:**
+- Make sure Leaflet packages are installed: `npm list leaflet react-leaflet`
+- Clear browser cache (Ctrl+Shift+R) and refresh
+- Check browser console (F12) for errors
+- Verify backend is providing data: http://localhost:5001/api/iss/history-hours?hours=5
+
+**Map shows but no ISS marker or path:**
+- Backend needs 2-3 minutes to collect initial data
+- Check backend terminal for "📍 ISS Location" messages
+- Refresh browser after waiting
+- If still no path: Map will show "⏳ Collecting more data points..." until enough data is available
+
+**Map marker icon not showing:**
+- Icon is now a satellite emoji (🛰️) instead of default marker
+- If not visible, check browser emoji support
+- Clear cache and refresh browser
+
 ## 🎓 Learning Outcomes
 
 This project demonstrates:
@@ -247,6 +321,8 @@ This project demonstrates:
 - ✅ Real-time data updates
 - ✅ Correlation detection logic
 - ✅ Frontend state management
+- ✅ Interactive map visualization with Leaflet
+- ✅ Coordinate transformation (lat/lon to map)
 - ✅ Responsive UI design
 
 ## 📚 External Resources
@@ -255,6 +331,8 @@ This project demonstrates:
 - [Flask Documentation](https://flask.palletsprojects.com/)
 - [React Documentation](https://react.dev/)
 - [SQLite Documentation](https://www.sqlite.org/docs.html)
+- [Leaflet Documentation](https://leafletjs.com/)
+- [React-Leaflet Documentation](https://react-leaflet.js.org/)
 
 ## 🙏 Credits
 

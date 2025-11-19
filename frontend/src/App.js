@@ -3,6 +3,7 @@ import axios from 'axios';
 import AlertBanner from './components/AlertBanner';
 import ISSLocation from './components/ISSLocation';
 import AstronautList from './components/AstronautList';
+import ISSMap from './components/ISSMap';
 import './App.css';
 
 const API_BASE_URL = 'http://localhost:5001/api';
@@ -102,6 +103,9 @@ function App() {
         )}
 
         <AlertBanner alerts={alerts} onDismiss={dismissAlert} />
+
+        {/* World Map with ISS tracking */}
+        <ISSMap />
 
         <div style={{
           display: 'grid',

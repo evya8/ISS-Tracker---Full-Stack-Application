@@ -2,6 +2,8 @@
 
 A real-time International Space Station tracking application that demonstrates fetching data from multiple APIs, storing in a database, and flagging correlations.
 
+![ISS Tracker Screenshot](screenshots/app-screenshot.png)
+
 ## 📋 Project Overview
 
 This application:
